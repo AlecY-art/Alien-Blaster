@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Space Invaders</title>
+        <style>
+
+                canvas {
+                  margin: 50px auto;
+                  border: 5px solid #000;
+                  display: block;
+                }
+        </style>
+    </head>
+
+        <body>
+             <canvas id="gameCanvas" width="1200" height="700"></canvas>
+
+
+             <audio id = 'bgMusic' autoplay loop>
+                <source src = "music.mp3">
+              </audio>
+
+
+                <script>
+                     const canvas = document.getElementById('gameCanvas');
+                     const ctx = canvas.getContext('2d');
+
+                     //uploads of the ship, alien, and background images
+                     const backgroundImg = new Image()
+                          backgroundImg.src = 'background.jpg';
+
+                     const shipImg = new Image()
+                          shipImg.src = 'ship.png'
+
+                     const alienImg = new Image()
+                          alienImg.src = 'alien.png'
+
+
+                      //character demensions of the ship, alien, and bullet
+                     const ship = {
+                        x: canvas.width / 2 - 15,
+                        y:canvas.height - 130,
+                        shipWidth: 100,
+                        shipHeight: 100,
+                        speed: 5,
+                     };
+
+                     const alien = {
+                      x: 40,
+                      y: 40,
+                      alienWidth: 60,
+                      alienHeight: 60,
+                     };
+
+                     const bullet = {
+                      x: 0,
+                      y: 0,
+                      bulletWidth: 5,
+                      bulletHeight: 10,
+                      color: '#0F0',
+                      speed: 7,
+                      active: false,
+                     };
+
+                     let score = 0
+
+                     //draws out the different images.
+                     function draw(){
+                      ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
+
+                      ctx.fillStyle = ship.color;
+                      ctx.drawImage(shipImg, ship.x, ship.y, ship.shipWidth , ship.shipHeight);
+
+                      ctx.fillStyle = alien.color;
+                      ctx.drawImage(alienImg, alien.x, alien.y, alien.alienWidth, alien.alienHeight);
+
+                      if (bullet.active){
+                        ctx.fillStyle = bullet.color
+                        ctx.fillRect(bullet.x, bullet.y, bullet.bulletWidth, bullet.bulletHeight);
+                      }
+
+                    //draws the scoreboard on the topleft
+                    ctx.fillStyle = '#0F0';
+                    ctx.font = '40px Ariel';
+                    ctx.fillText('Score: ' + score, 10, 30);
+
+                     };
+
+
+
+                     //keys for the movement of the ship
+                     const keys = {
+                      left: false,
+                      right: false,
+                      space: false,
+                     };
+
+                     function update(){
+                      if(keys.right && !keys.left){
+                        ship.x += ship.speed;
+                      }else if (keys.left && !keys.right){
+                        ship.x -= ship.speed;
+                      }
+
+                      //stops the ship from going out of bounds
+                      if (ship.x < 0) {
+                        ship.x = 0
+                      }
+                      else if (ship.x > canvas.width - ship.shipWidth) {
+                        ship.x = canvas.width - ship.shipWidth
+                      }
+
+
+                     };
+
+                     //bullet collision with the alien
+                     function gameLoop(){
+                     update();
+                     if(bullet.active){
+                      bullet.y -= bullet.speed;
+
+                      if(
+                        bullet.x < alien.x + alien.alienWidth &&
+                        bullet.x + bullet.bulletWidth > alien.x &&
+                        bullet.y < alien.y + alien.alienHeight &&
+                        bullet.y + bullet.bulletHeight > alien.y
+                      ){
+                        alien.x = Math.random() * (canvas.width - alien.alienWidth);
+                        alien.y = Math.random() * (canvas.height/2 - alien.alienHeight);
+                        bullet.active = false;
+                        score++
+                      }
+                     }
+                     //stops the bullet from going out of bounds
+                     if(bullet.y < 0){
+                      bullet.active = false
+                     }
+                    draw();
+                    requestAnimationFrame(gameLoop);
+                    };
+
+                    //binds keys for movement
+                     document.addEventListener('keydown', (e) =>{
+                          if(e.key === 'ArrowLeft')keys.left = true;
+                          if(e.key === 'ArrowRight')keys.right = true;
+                          if(e.key === ' ')keys.space = true;
+                     });
+
+                     document.addEventListener('keyup', (e) =>{
+                          if(e.key === 'ArrowLeft')keys.left = false;
+                          if(e.key === 'ArrowRight')keys.right = false;
+                          if(e.key === ' '){
+                            keys.space = false;
+                            if(!bullet.active){
+                              bullet.x = ship.x + ship.shipWidth/2 - bullet.bulletWidth/2;
+                              bullet.y = ship.y,
+                              bullet.active = true;
+                            }
+                          }
+                     });
+
+
+                    gameLoop();
+
+
+                </script>
+        </body>
+
+</html>
